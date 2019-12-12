@@ -1,0 +1,58 @@
+Option Explicit
+
+' set our connection strings
+Const AcessConStr As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=nutrition_database.accdb; Persist Security Info=False;"
+Const sqlconstr As String = "Provider=SQLNCLI11;Server=localhost;Database=Movies;Trusted_Connection=yes;"
+
+Sub Button1_Click()
+   Dim MoviesConn As ADODB.Connection
+   Dim MoviesData As ADODB.Recordset
+   Dim MoviesField As ADODB.Field
+   
+   Set MoviesConn = New ADODB.Connection
+   Set MoviesData = New ADODB.Recordset
+   
+   MoviesConn.ConnectionString = AcessConStr
+   MoviesConn.Open
+   
+   ' Setting save point in database
+    
+   With MoviesData
+        .ActiveConnection = MoviesConn
+        .Source = GetInsertTextAccess
+        .LockType = adLockReadOnly
+        .CursorType = adOpenForwardOnly
+        .Open
+        
+   End With
+   
+   MsgBox ("Your results have been opened in another sheet...click over to see!")
+   ' Makes our sheet2 for data display visible
+   If Worksheets("Sheet2").Visible <> True Then
+        Worksheets("Sheet2").Visible = True
+   End If
+   Worksheets("Sheet2").Select
+   ' Worksheets.Add
+   
+   ' Loop over our query results
+   For Each MoviesField In MoviesData.Fields
+        ActiveCell.Value = MoviesField.Name
+        ActiveCell.Offset(0, 1).Select
+   Next MoviesField
+   
+   Range("A1").Select
+   Range("A2").CopyFromRecordset MoviesData
+   
+   MoviesData.Close
+   MoviesConn.Close
+   
+End Sub
+
+Function GetInsertTextAccess() As String
+    Dim SQLStr As String
+    
+    ' Access dates are delimited with hashmarks
+    SQLStr = "SELECT protein, fat, carbs, calories, todays_date FROM diet_information"
+    
+    GetInsertTextAccess = SQLStr
+End Function
