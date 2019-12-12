@@ -4,7 +4,7 @@ Option Explicit
 Const AcessConStr As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=nutrition_database.accdb; Persist Security Info=False;"
 Const sqlconstr As String = "Provider=SQLNCLI11;Server=localhost;Database=Movies;Trusted_Connection=yes;"
 
-Sub Button1_Click()
+Sub Save_Button_Click()
    Dim MoviesConn As ADODB.Connection
    Dim MoviesData As ADODB.Recordset
    Dim MoviesField As ADODB.Field
