@@ -1,0 +1,87 @@
+Option Explicit
+
+Const AcessConStr As String = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\nutrition_database.accdb; Persist Security Info=False;"
+Const sqlconstr As String = "Provider=SQLNCLI11;Server=localhost;Database=Movies;Trusted_Connection=yes;"
+
+Private Sub userFormClearButton_Click()
+    If IsNumeric(userFormCalories.Value) Then
+        userFormCalories.Value = ""
+    End If
+    
+End Sub
+
+Private Sub userFormSaveButton_Click()
+    ' Code to save data into the database
+    Dim MoviesConn As ADODB.Connection
+    Dim MoviesCmd As ADODB.Command
+    Dim r As Range
+    
+    ' set variables
+    
+    Set MoviesConn = New ADODB.Connection
+    Set MoviesCmd = New ADODB.Command
+    
+    MoviesConn.ConnectionString = AcessConStr
+    MoviesConn.Open
+    
+    MoviesCmd.ActiveConnection = MoviesConn
+    
+    ' Setting save point in database
+    MoviesConn.BeginTrans
+    
+    
+    ' check error
+    On Error GoTo ErrorHandler
+    ' generate command text
+    MoviesCmd.CommandText = GetInsertTextAccess( _
+            userFormProtein.Value, _
+            userFormCarbs.Value, _
+            userFormFat.Value, _
+            userFormCalories.Value)
+
+
+    On Error GoTo 0
+    
+    ' Execute the query
+    MoviesCmd.Execute
+    
+    ' clear out fields once data is saved into the database
+    userFormPrompt.Caption = "Successfully saved"
+    userFormProtein.Value = ""
+    userFormCarbs.Value = ""
+    userFormFat.Value = ""
+    userFormCalories.Value = ""
+    
+
+    ' Debug.Print MoviesCmd.CommandText
+    
+    MoviesConn.CommitTrans
+    MoviesConn.Close
+    
+    Set MoviesConn = Nothing
+    
+    ' Can only reach error handler if generating run time error
+    Exit Sub
+ErrorHandler:
+    MsgBox "Error number = " & (Err.Number - vbObjectError) & vbNewLine & Err.Description
+   
+    MoviesConn.RollbackTrans
+    ' Close connection
+    MoviesConn.Close
+End Sub
+
+Function GetInsertTextAccess(protein As String, carbs As String, fat As String, Calories As String) As String
+    Dim SQLStr As String
+    Dim time As String
+
+    time = Date
+    
+    ' Access dates are delimited with hashmarks
+    SQLStr = _
+        "INSERT INTO diet_information (" & _
+        "calories, protein, carbs, fat, todays_date)" & _
+        "Values('" & Calories & " ', '" & protein & "', '" & carbs & "','" & fat & "', '" & time & "');"
+        
+    
+    GetInsertTextAccess = SQLStr
+End Function
